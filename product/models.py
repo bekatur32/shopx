@@ -1,21 +1,13 @@
-from datetime import datetime
-
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.conf import settings
 
 
 from Category.models import Category, PodCategory
-from .manager import ConfirmedCommentManager
+from user_profiles.models import CustomUser
 
 
 class Product(models.Model):
-    RATING = (
-        (1, '⭐️'),
-        (2, '⭐️⭐️'),
-        (3, '⭐️⭐️⭐️'),
-        (4, '⭐️⭐️⭐️⭐️'),
-        (5, '⭐️⭐️⭐️⭐️⭐️'),
-    )
     category = models.ForeignKey(
         Category, related_name="products", on_delete=models.CASCADE
     )
@@ -30,7 +22,6 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     available = models.BooleanField(default=True)
     location = models.CharField(max_length=100, blank=True)
-    rating = models.IntegerField(choices=RATING, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -52,3 +43,20 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Recall(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    text = models.TextField()
+    file = models.FileField(upload_to="recalls/%Y/%m/%d", blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.user} {self.product}'
+
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
