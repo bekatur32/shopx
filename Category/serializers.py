@@ -12,5 +12,5 @@ class CategorySerializer(serializers.ModelSerializer):
 class PodCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = PodCategory
-        fields = ("id", "name", "category", "slug", "img")
+        fields = ("id", "name", "category", "slug")
         read_only_fields = ("id", "slug")

@@ -11,6 +11,6 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(PodCategory)
 class PodCategory(admin.ModelAdmin):
-    list_display = ["id", "name", "slug", "img"]
+    list_display = ["id", "name", "slug"]
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ["name"]
