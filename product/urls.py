@@ -1,10 +1,17 @@
-from django.urls import path
-from .views import ProductDetailView, ProductListApiView, ProductCreateApiView
+from django.urls import path, include
+from .views import *
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register('recall', RecallViewSet, basename='recall')
 
 urlpatterns = [
 
     path("product/list/", ProductListApiView.as_view(), name="product-list"),
     path('product/create/', ProductCreateApiView.as_view(), name='product-create'),
     path("product/<int:pk>/", ProductDetailView.as_view(), name="product-detail"),
+
+    path('recall-list/<int:pk>/', RecallListApiView.as_view(), name='recall-list'),
+    path('', include(router.urls)),
 ]
 

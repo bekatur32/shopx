@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product
+from .models import Product, Recall
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -22,6 +22,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "updated",
         )  # Поля, которые можно только читать
 
+
 class ProductSerializer(serializers.ModelSerializer):
     location = serializers.CharField(read_only=True)
     rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
@@ -43,3 +44,13 @@ class ProductSerializer(serializers.ModelSerializer):
             representation.pop('rating', None)
 
         return representation
+
+
+class RecallSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recall
+        fields = '__all__'
+        extra_kwargs = {'user': {'read_only': True, }, 'created': {'read_only': True, },
+                        'updated': {'read_only': True, },
+                        }

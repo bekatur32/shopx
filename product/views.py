@@ -1,13 +1,12 @@
-from datetime import datetime
-
-from .serializers import ProductSerializer
-from .models import Product
+from rest_framework.response import Response
+from .serializers import ProductSerializer, RecallSerializer
+from .models import Product, Recall
 from .permissions import IsSellerOfProduct
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework import generics
-from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.generics import CreateAPIView, ListAPIView
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -73,3 +72,44 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductSerializer
     permission_classes = [
         IsSellerOfProduct,]
+
+
+class RecallListApiView(ListAPIView):
+    serializer_class = RecallSerializer
+
+    def get_queryset(self):
+        queryset = Recall.objects.filter(product=self.kwargs['pk'])
+        return queryset
+
+
+class RecallViewSet(GenericViewSet):
+    queryset = Recall.objects.all()
+    serializer_class = RecallSerializer
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        instance = self.get_object()
+        if instance.user == self.request.user:
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+
+    def partial_update(self, request, pk=None):
+        return self.update(request, pk=None)
+
+    def destroy(self, request, pk=None):
+        instance = self.get_object()
+        if instance.user == self.request.user:
+            instance.delete()
+            return Response('Recall is deleted')
