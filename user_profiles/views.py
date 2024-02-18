@@ -37,26 +37,19 @@ class UserVerifyRegisterCode(generics.UpdateAPIView):
 
 
 
-# если забыл пароль он должен пройти верификацию этот апи отправляет на указанный email код
 class ForgetPasswordSendCodeView(generics.UpdateAPIView):
     serializer_class = SendCodeSerializer
 
-    def patch(self, request, *args, **kwargs):
-        email = request.data.get("email")
-        result = ChangePassword.send_email_code(email=email)
-
-        if result == "success":
-            return Response("Код для верификации отправлен на указанный email ", status=status.HTTP_200_OK)
-        else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
+    def put(self, request, *args, **kwargs):
+        email_or_phone = request.data.get("email_or_phone")
+        return ChangePassword.send_email_code(email_or_phone=email_or_phone)
 
         
 
 
 # апи для того чтобы сттать продавцом 
 class BecomeSellerView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsBuyer]
 
     def update(self, request, *args, **kwargs):
         user = request.user
@@ -73,7 +66,7 @@ class ForgetPasswordView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         
-        result = ChangePassword.set_new_password(self=self,request=request)
+        result = ChangePassword.change_password_on_reset(self=self,request=request)
 
         if result == "success":
             return Response("Пароль успешно изменен", status=status.HTTP_200_OK)
@@ -97,20 +90,35 @@ class UserResetPasswordView(generics.UpdateAPIView):
 
 
 
+
 class ListProfileApi(generics.ListAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    
 
-class UpdateProfileApi(generics.UpdateAPIView):
+
+
+class UpdateUserProfileApi(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsBuyer]
     lookup_field = 'id'
 
-class DetailProfileApi(generics.RetrieveAPIView):
+class DetailUserProfileApi(generics.RetrieveAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    lookup_field = 'id'
+
+
+class SellerUpdateProfileApi(generics.UpdateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = SellerProfileSerializer
+    permission_classes = [permissions.IsAuthenticated,IsSeller]
+    lookup_field = 'id'
+
+
+class SellerDetailProfileApi(generics.RetrieveAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = SellerProfileSerializer
     lookup_field = 'id'
 
 

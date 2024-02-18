@@ -18,8 +18,10 @@ urlpatterns = [
     path('reset-password-profile/', UserResetPasswordView.as_view(), name='reset_password'),
 
 
-    path('profiles/', ListProfileApi.as_view(), name='reset_password'),
-    path('profile/<int:id>', DetailProfileApi.as_view(), name='reset_password'),
-    path('profile/update/<int:id>', UpdateProfileApi.as_view(), name='reset_password'),
+    path('profiles/', ListProfileApi.as_view(), name=''),
+    path('profile/<int:id>', DetailUserProfileApi.as_view(), name=''),
+    path('profile/update/<int:id>', UpdateUserProfileApi.as_view(), name=''),
 
+    path('seller-profile/<int:id>', DetailUserProfileApi.as_view(), name=''),
+    path('seller-profile/update/<int:id>', UpdateUserProfileApi.as_view(), name=''),
 ]

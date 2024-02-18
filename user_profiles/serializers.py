@@ -5,7 +5,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username','surname','email','password']
+        fields = ['email_or_phone','password']
+
 
     def create(self, validated_data):
         user = UserProfile.objects.create_user(**validated_data)
@@ -17,7 +18,7 @@ class SellerRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seller
-        fields = ['username','surname','email','password','market_name']
+        fields = ['email_or_phone','password','market_name','location']
 
     def create(self, validated_data):
         user = Seller.objects.create_user(**validated_data)
@@ -52,7 +53,7 @@ class LoginSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['email','password']
+        fields = ['email_or_phone','password']
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -61,13 +62,15 @@ class ChangePasswordSerializer(serializers.Serializer):
     confirm_new_password = serializers.CharField(write_only=True)
     
     class Meta:
-        fields = ['old_password','new_password','confirm_new_password',]
+        fields = ['old_password',
+                  'new_password',
+                  'confirm_new_password',]
 
 class SendCodeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['email']
+        fields = ['email_or_phone']
 
 
 class ForgetPasswordSerializer(serializers.Serializer):
@@ -86,12 +89,23 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = ['username',
                   'surname',
-                  'email',
+                  'email_or_phone',
                   'number',
                   'gender',
-                  'category',
+                  ]
+        
+class SellerProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Seller
+        fields = ['number',
+                  'market_name',
                   'location',
-                  'whatsapp_link',
+                  'email_or_phone',
+                  'category',
                   'instagram_link',
-                  'tiktok_link']
-    
+                  'whatsapp_link',
+                  'tiktok_link',
+                  'facebook_link',
+                  ]
+        

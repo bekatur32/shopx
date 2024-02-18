@@ -3,11 +3,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import connections, models
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
-from .utils import send_verification_code
+from .utils import send_verification_code,send_code_to_number
 from .models import UserProfile
 from rest_framework.response import Response
 from rest_framework import status
-
+from .models import CustomUser
 from rest_framework import status
 
 
@@ -16,11 +16,16 @@ class CreateUserApiView(mixins.CreateModelMixin,generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
 
+        email_or_phone = serializer.validated_data['email_or_phone']
         serializer.save()
-        send_verification_code(email=email)
-        return Response("Код был отправлен на email", status=status.HTTP_201_CREATED)
+
+        if "@" in email_or_phone:
+            send_verification_code(email_or_phone=email_or_phone)
+        else:
+            send_code_to_number(email_or_phone=int(email_or_phone))
+
+        return Response("Код был отправлен на указанный реквизит", status=status.HTTP_201_CREATED)
 
 
 
@@ -69,7 +74,7 @@ class ChangePassword:
         except Exception as e:
             return str(e)
         
-    def set_new_password(self,request):
+    def change_password_on_reset(self,request):
         user = request.user
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -84,11 +89,20 @@ class ChangePassword:
         user.save()
         return Response("Пароль был успешно изменен", status=status.HTTP_200_OK)
     
-    def send_email_code(email):
-        try:
-            user = UserProfile.objects.get(email=email)
-            send_verification_code(email=email)
-        except user.DoesNotExist:
-            return Response("Вы не зарегистрированы", status=status.HTTP_404_NOT_FOUND)
+    
+    def send_email_code(email_or_phone):
+
+        if CustomUser.objects.get(email_or_phone=email_or_phone):
+            if "@" in email_or_phone:
+                send_verification_code(email_or_phone=email_or_phone)
+                return Response("Код был отправлен на ваш email")
+            elif "996" in email_or_phone:
+                send_code_to_number(email_or_phone=int(email_or_phone))
+                return Response("Код был отправлен на ваш номер")
+            else:
+                return Response("The given data invalid")
+        else:
+            return Response("Вы не зарегистрированы")
+        
     
 
