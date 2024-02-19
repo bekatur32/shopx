@@ -3,7 +3,7 @@ from django.db import models
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200, unique=True)
+   # slug = models.SlugField(max_length=200, unique=True)
     img = models.ImageField(upload_to="products/%Y/%m/%d", blank=True)
 
     class Meta:
@@ -23,7 +23,7 @@ class PodCategory(models.Model):
         Category, related_name="PodCategory", on_delete=models.CASCADE
     )
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200, unique=True)
+    #slug = models.SlugField(max_length=200, unique=True)
 
     class Meta:
         ordering = ["name"]

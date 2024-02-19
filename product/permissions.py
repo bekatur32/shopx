@@ -3,10 +3,10 @@ from rest_framework.permissions import BasePermission
 
 class IsAnonymoused(BasePermission):
     """
-        Allows access only to not authenticated users.
+    Allows access only to not authenticated users.
     """
 
-    message = 'permission denied, at first you must logout'
+    message = "permission denied, at first you must logout"
 
     def has_permission(self, request, view):
         return bool(request.user.is_anonymous)
@@ -14,10 +14,10 @@ class IsAnonymoused(BasePermission):
 
 class IsSeller(BasePermission):
     """
-        Allow access only user that is seller
+    Allow access only user that is seller
     """
 
-    message = 'permission denied, you are not seller user'
+    message = "permission denied, you are not seller user"
 
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user
@@ -28,7 +28,7 @@ class IsSeller(BasePermission):
 
 class IsSellerAndHasStore(BasePermission):
     """
-        Allow access only user that is seller and have store
+    Allow access only user that is seller and have store
     """
 
     message = "permission denied, you are not seller user or don't have store"
@@ -47,13 +47,27 @@ class IsSellerAndHasStore(BasePermission):
 
 class IsSellerOfProduct(BasePermission):
     """
-        Allow access only user that seller of product
+    Allow access only user that seller of product
     """
-
-    message = 'permission denied, you are not seller of this product'
 
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user
 
     def has_object_permission(self, request, view, obj):
-        return bool(obj.seller.founder == request.user and request.user.is_seller)
+        return obj.user == request.user
+
+
+
+class IsAdminOrOwnerOrReadOnly(BasePermission):
+
+    def has_permission(self, request, view):
+        if request.user.is_superuser:
+            return True
+
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+
+        return obj.user == request.user

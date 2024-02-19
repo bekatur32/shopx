@@ -1,40 +1,52 @@
 from rest_framework.response import Response
 from .serializers import ProductSerializer, RecallSerializer
 from .models import Product, Recall
-from .permissions import IsSellerOfProduct
+from rest_framework.viewsets import GenericViewSet
 
-from rest_framework import status
+
+from .serializers import ProductSerializer, ProductDetailSerializer
+from .permissions import IsSellerOfProduct, IsAdminOrOwnerOrReadOnly
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework import generics
-from rest_framework.viewsets import GenericViewSet
 from rest_framework.generics import CreateAPIView, ListAPIView
-
+from rest_framework import permissions
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+
+
+class ProductsByPodCategoryApiView(APIView):
+    def get(self, request, podcategory_id):
+        products = Product.objects.filter(podcategory_id=podcategory_id)
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)
+
+
+class ProductsByCategoryApiView(APIView):
+    def get(self, request, category_id):
+        products = Product.objects.filter(category_id=category_id)
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)
 
 
 class ProductCreateApiView(CreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [
-        IsAdminUser,
-    ]
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    permission_classes = [permissions.IsAuthenticated, ]
 
 
 class ProductListApiView(ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = [AllowAny, ]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["category", "podcategory", "user", "price", "available"]
-    search_fields = ["name", "description"]
-    ordering_fields = ["name", "price"]
-    permission_classes = [
-        AllowAny,
-    ]
+    search_fields = ["title", "description"]
+    ordering_fields = ["title", "price"]
+    permission_classes = [AllowAny, ]
 
     def get_queryset(self):
         query = self.request.query_params.get("search", "")
@@ -43,7 +55,7 @@ class ProductListApiView(ListAPIView):
         start_date = self.request.query_params.get("start_date", None)
         end_date = self.request.query_params.get("end_date", None)
 
-        products = Product.objects.filter(name__icontains=query)
+        products = Product.objects.filter(title__icontains=query)
 
         if min_price is not None:
             products = products.filter(price__gte=min_price)
@@ -59,19 +71,11 @@ class ProductListApiView(ListAPIView):
 
         return products
 
-    # def get(self, request):
-    #     products = request.user.store.products.all()
-    #     srz_data = self.serializer_class(instance=products, many=True)
-    #     return Response(data=srz_data.data, status=status.HTTP_200_OK)
 
-
-
-# Представление для получения деталей, обновления и удаления продукта
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = [
-        IsSellerOfProduct,]
+    serializer_class = ProductDetailSerializer
+    permission_classes = [IsAdminOrOwnerOrReadOnly, ]
 
 
 class RecallListApiView(ListAPIView):
