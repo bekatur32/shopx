@@ -4,7 +4,7 @@ from user_profiles.models import CustomUser
 
 class Chat(models.Model):
     participants = models.ManyToManyField(CustomUser, related_name="chats")
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Chat {self.pk}"
@@ -19,7 +19,8 @@ class Message(models.Model):
         CustomUser, on_delete=models.CASCADE, related_name="sent_messages"
     )
     content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.recipient} - {self.timestamp}\n{self.sender} - {self.timestamp}"
