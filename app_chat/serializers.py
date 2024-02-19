@@ -12,8 +12,12 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class ChatSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Chat
-        fields = ('participants', )
-        extra_kwargs = {'participants': {'read_only': True, }, }
+        exclude = ('participants', )
+
+    def get_user(self, obj):
+        user = obj.participants.exclude(pk=obj.user).first()
+        return user.pk

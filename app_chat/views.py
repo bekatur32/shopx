@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .models import Chat, Message
 from .serializers import ChatSerializer, MessageSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Value
 
 
 class ChatViewSet(GenericViewSet):
@@ -11,7 +12,8 @@ class ChatViewSet(GenericViewSet):
     permission_classes = (IsAuthenticated, )
 
     def list(self, request, *args, **kwargs):
-        queryset = Chat.objects.filter(participants__in=[self.request.user])
+        queryset = (Chat.objects.filter(participants__in=[self.request.user])
+                    .order_by('timestamp').annotate(user=Value(self.request.user.pk)))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -31,10 +33,13 @@ class ChatViewSet(GenericViewSet):
 
 class MessageListApiView(ListAPIView):
     serializer_class = MessageSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        queryset = Message.objects.filter(chat=self.kwargs['pk'])
-        return queryset
+        chats = Chat.objects.filter(participants__in=[self.request.user]).values_list('pk', flat=True)
+        if self.kwargs['pk'] in chats:
+            queryset = Message.objects.filter(chat=self.kwargs['pk']).order_by('timestamp')
+            return queryset
 
 
 class MessageViewSet(GenericViewSet):
@@ -44,9 +49,9 @@ class MessageViewSet(GenericViewSet):
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        chat, created = Chat.objects.get_or_create(
-            participants__in=[self.request.user, serializer.validated_data['participants']])
+        chat = Chat.objects.filter(participants__in=[self.request.user, serializer.validated_data['recipient']]).first()
         serializer.save(sender=request.user, chat=chat)
+        chat.save()
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
