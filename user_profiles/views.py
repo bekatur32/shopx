@@ -47,7 +47,7 @@ class ForgetPasswordSendCodeView(generics.UpdateAPIView):
 
 # апи для того чтобы сттать продавцом 
 class BecomeSellerView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated,"IsBuyer"]
+    permission_classes = [permissions.IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         user = request.user
@@ -98,7 +98,7 @@ class ListProfileApi(generics.ListAPIView):
 class UpdateUserProfileApi(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated,"IsBuyer"]
+    permission_classes = [permissions.IsAuthenticated,]
     lookup_field = 'id'
 
 class DetailUserProfileApi(generics.RetrieveAPIView):
@@ -110,7 +110,7 @@ class DetailUserProfileApi(generics.RetrieveAPIView):
 class SellerUpdateProfileApi(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = SellerProfileSerializer
-    permission_classes = [permissions.IsAuthenticated,"IsSeller"]
+    permission_classes = [permissions.IsAuthenticated,]
     lookup_field = 'id'
 
 
@@ -120,4 +120,19 @@ class SellerDetailProfileApi(generics.RetrieveAPIView):
     lookup_field = 'id'
 
 
+class MarketView(generics.ListAPIView):
+    serializer_class = MarketSerializer
+
+    def get_queryset(self):
+        category_id = self.kwargs.get('category_id')
+        podcategory_id = self.kwargs.get('podcategory_id')
+        
+        queryset = Seller.objects.prefetch_related('products__category', 'products__podcategory').all()
+        
+        if category_id:
+            queryset = queryset.filter(products__category_id=category_id)
+            if podcategory_id:
+                queryset = queryset.filter(products__podcategory_id=podcategory_id)
+        
+        return queryset
 

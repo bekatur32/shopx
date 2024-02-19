@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from .models import *
+from product.serializers import ProductSerializer
+from Category.models import Category,PodCategory
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
 
@@ -95,3 +98,29 @@ class SellerProfileSerializer(serializers.ModelSerializer):
                   'facebook_link',
                   ]
         
+
+
+class PodCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PodCategory
+        fields = ('name', 'slug', 'img')
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('name', 'slug', 'img')
+
+class ProductSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(many=False)
+    podcategory = PodCategorySerializer()
+
+    class Meta:
+        model = Product
+        fields = ('name', 'slug', 'image', 'description', 'price', 'available', 'location', 'rating', 'category', 'podcategory')
+
+class MarketSerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=False)
+
+    class Meta:
+        model = Seller
+        fields = ('market_name', 'products', 'location', 'number', 'email_or_phone', 'is_verified')

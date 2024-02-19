@@ -15,6 +15,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateField(auto_now=True)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
     number = models.CharField(max_length= 30,unique=True,null= True, blank=True)
     is_seller = models.BooleanField(default=False, verbose_name="продавец")
 
@@ -64,7 +65,7 @@ class User(UserProfile):
 
 
 class Seller(UserProfile):
-    products = models.ForeignKey(Product, on_delete=models.CASCADE)
+    products = models.ForeignKey(Product, on_delete=models.CASCADE, null=True,blank=True)
     market_name = models.CharField(max_length=30) 
     
     def __str__(self) -> str:
