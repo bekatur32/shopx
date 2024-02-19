@@ -1,12 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework import permissions
-from django.contrib.auth.hashers import check_password
-from .utils import send_verification_code
-from .services import *
-from .permissions import *
 
+from .services import *
 from .serializers import *
+
 
 # апи для регистрации user sellers wholeseller
 class UserRegisterView(CreateUserApiView):
@@ -49,7 +47,7 @@ class ForgetPasswordSendCodeView(generics.UpdateAPIView):
 
 # апи для того чтобы сттать продавцом 
 class BecomeSellerView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated,IsBuyer]
+    permission_classes = [permissions.IsAuthenticated,"IsBuyer"]
 
     def update(self, request, *args, **kwargs):
         user = request.user
@@ -100,7 +98,7 @@ class ListProfileApi(generics.ListAPIView):
 class UpdateUserProfileApi(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated,IsBuyer]
+    permission_classes = [permissions.IsAuthenticated,"IsBuyer"]
     lookup_field = 'id'
 
 class DetailUserProfileApi(generics.RetrieveAPIView):
@@ -112,7 +110,7 @@ class DetailUserProfileApi(generics.RetrieveAPIView):
 class SellerUpdateProfileApi(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = SellerProfileSerializer
-    permission_classes = [permissions.IsAuthenticated,IsSeller]
+    permission_classes = [permissions.IsAuthenticated,"IsSeller"]
     lookup_field = 'id'
 
 

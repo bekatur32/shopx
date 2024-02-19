@@ -26,20 +26,6 @@ class SellerRegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
     
-    
-# class WholeSellerRegisterSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = WholeSeller
-#         fields = ['username','surname','email','password','question_for_wholeseller']
-
-#     def create(self, validated_data):
-#         user = WholeSeller.objects.create_user(**validated_data)
-#         user.wholeseller = True
-#         user.save()
-#         return user
-
-
 
 
 class VerifyCodeSerializer(serializers.ModelSerializer):
