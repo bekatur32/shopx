@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Product
+from .models import Product, Recall
 
 
-
+admin.site.register(Recall)
 
 
 class PriceFilter(admin.SimpleListFilter):
