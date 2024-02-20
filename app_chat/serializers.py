@@ -2,22 +2,53 @@ from rest_framework import serializers
 from .models import Chat, Message
 
 
-class MessageSerializer(serializers.ModelSerializer):
+class MessageGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
         fields = '__all__'
-        extra_kwargs = {'sender': {'read_only': True, }, 'timestamp': {'read_only': True, },
-                        'chat': {'read_only': True, }, }
+
+
+class MessageCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Message
+        exclude = ('chat', 'sender', 'is_read', 'timestamp')
+
+
+class MessageUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Message
+        fields = ('content', )
 
 
 class ChatSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Chat
-        exclude = ('participants', )
+        fields = '__all__'
 
-    def get_user(self, obj):
-        user = obj.participants.exclude(pk=obj.user).first()
-        return user.pk
+
+class ChatSellerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Chat
+        exclude = ('seller', )
+
+    def validate(self, attrs):
+        if attrs['buyer'].is_seller:
+            raise serializers.ValidationError("No such seller")
+        return attrs
+
+
+class ChatBuyerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Chat
+        exclude = ('buyer', )
+
+    def validate(self, attrs):
+        if not attrs['seller'].is_seller:
+            raise serializers.ValidationError("No such buyer")
+        return attrs
