@@ -9,11 +9,15 @@ from .permissions import IsSellerOfProduct, IsAdminOrOwnerOrReadOnly
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny, IsAdminUser
+from .models import Product, Recall, Like
+from user_profiles.permissions import IsSeller, IsBuyer
+from .filters import CustomFilter
 from rest_framework import generics
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db.models import Avg, Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -36,10 +40,14 @@ class ProductCreateApiView(CreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated, ]
+    permission_classes = [IsSeller, ]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class ProductListApiView(ListAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().annotate(rating=Avg("recall__rating"), likes=Count('like'))
     serializer_class = ProductSerializer
     permission_classes = [AllowAny, ]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -77,6 +85,18 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
     permission_classes = [IsAdminOrOwnerOrReadOnly, ]
 
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = CustomFilter
+    search_fields = ["name", "description"]
+    ordering_fields = ["name", "price"]
+
+
+# Представление для получения деталей, обновления и удаления продукта
+class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all().annotate(rating=Avg("recall__rating"), likes=Count('like'))
+    serializer_class = ProductSerializer
+    permission_classes = [IsSeller, ]
+
 
 class RecallListApiView(ListAPIView):
     serializer_class = RecallSerializer
@@ -89,6 +109,7 @@ class RecallListApiView(ListAPIView):
 class RecallViewSet(GenericViewSet):
     queryset = Recall.objects.all()
     serializer_class = RecallSerializer
+    permission_classes = [IsBuyer, ]
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -117,3 +138,27 @@ class RecallViewSet(GenericViewSet):
         if instance.user == self.request.user:
             instance.delete()
             return Response('Recall is deleted')
+
+
+class LikeView(generics.RetrieveDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsBuyer, ]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        like = Like.objects.filter(user=self.request.user, product=instance)
+        if like:
+            return Response("Like was already created")
+        else:
+            Like.objects.create(user=self.request.user, product=instance)
+            return Response("Like created")
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        like = Like.objects.filter(user=self.request.user, product=instance)
+        if like:
+            like.delete()
+            return Response("Like is deleted")
+        else:
+            return Response("No Like")

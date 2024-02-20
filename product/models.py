@@ -61,6 +61,7 @@ class Recall(models.Model):
         verbose_name_plural = 'Отзывы'
 
 
+
 class Discount(models.Model):
     product = models.OneToOneField(
         Product, related_name="discount", on_delete=models.CASCADE
@@ -73,3 +74,16 @@ class Discount(models.Model):
 
     def __str__(self):
         return f"Discount for {self.product.name}"
+
+
+class Like(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user} {self.product}'
+
+    class Meta:
+        verbose_name = 'Лайк'
+        verbose_name_plural = 'Лайки'
+

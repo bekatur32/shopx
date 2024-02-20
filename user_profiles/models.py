@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from .validators import validator_sms_code
 from .usermanager import CustomUserManager
 
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     username = models.CharField(max_length= 30, verbose_name="Имя",null=True, blank=True)
@@ -24,7 +25,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-
 
 
 class UserProfile(CustomUser):
@@ -58,7 +58,8 @@ class User(UserProfile):
     class Meta:
         verbose_name = 'Пользователи'
         verbose_name_plural = verbose_name
-63
+
+
 class Seller(UserProfile):
     market_name = models.CharField(max_length=30) 
     

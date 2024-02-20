@@ -3,6 +3,7 @@ from .models import Product, Recall, Discount
 
 
 class ProductSerializer(serializers.ModelSerializer):
+<<<<<<< HEAD
     category_name = serializers.SerializerMethodField()
     podcategory_name = serializers.SerializerMethodField()
 
@@ -31,10 +32,16 @@ class ProductSerializer(serializers.ModelSerializer):
             "image4"
 
         )
+=======
+    location = serializers.CharField(read_only=True)
+    rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
+    likes = serializers.IntegerField(read_only=True)
+>>>>>>> b7f160af6a5136430ea0163f929c712351a5f3d3
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
+<<<<<<< HEAD
         fields = [
             'title',
             'price',
@@ -45,6 +52,14 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "image3",
             "image4"
 ]
+=======
+        fields = (
+            'id', 'category', 'podcategory', 'user', 'name', 'slug', 'image', 'description', 'price', 'location', 'rating',
+            'available', 'created', 'updated', 'likes'
+        )
+        read_only_fields = ('id', 'slug', 'user', 'created', 'updated')
+
+>>>>>>> b7f160af6a5136430ea0163f929c712351a5f3d3
 
 class RecallSerializer(serializers.ModelSerializer):
 
