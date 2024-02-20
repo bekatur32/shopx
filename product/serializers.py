@@ -5,12 +5,13 @@ from .models import Product, Recall
 class ProductSerializer(serializers.ModelSerializer):
     location = serializers.CharField(read_only=True)
     rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
+    likes = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Product
         fields = (
             'id', 'category', 'podcategory', 'user', 'name', 'slug', 'image', 'description', 'price', 'location', 'rating',
-            'available', 'created', 'updated'
+            'available', 'created', 'updated', 'likes'
         )
         read_only_fields = ('id', 'slug', 'user', 'created', 'updated')
 
