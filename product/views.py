@@ -1,6 +1,6 @@
 from rest_framework.response import Response
-from .serializers import ProductSerializer, RecallSerializer
-from .models import Product, Recall
+from .serializers import ProductSerializer, RecallSerializer, LikeSerializer
+from .models import Product, Recall, Like
 from user_profiles.permissions import IsSeller, IsBuyer
 from .filters import CustomFilter
 from rest_framework import generics
@@ -76,3 +76,27 @@ class RecallViewSet(GenericViewSet):
         if instance.user == self.request.user:
             instance.delete()
             return Response('Recall is deleted')
+
+
+class LikeView(generics.RetrieveDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsBuyer, ]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        like = Like.objects.filter(user=self.request.user, product=instance)
+        if like:
+            return Response("Like was already created")
+        else:
+            Like.objects.create(user=self.request.user, product=instance)
+            return Response("Like created")
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        like = Like.objects.filter(user=self.request.user, product=instance)
+        if like:
+            like.delete()
+            return Response("Like is deleted")
+        else:
+            return Response("No Like")
