@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import *
-from product.serializers import ProductSerializer
+from product.models import Product
 from Category.models import Category,PodCategory
 
 
@@ -99,8 +99,31 @@ class SellerProfileSerializer(serializers.ModelSerializer):
                   ]
         
 
+
+
+
+
+class PodCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PodCategory
+        fields = ('name',)
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('name', )
+
+
+class ProductSerializerForMarket(serializers.ModelSerializer):
+    category = CategorySerializer()
+    podcategory = PodCategorySerializer()
+
+    class Meta:
+        model = Product
+        fields = ['name','category','podcategory']
+        
 class MarketSerializer(serializers.ModelSerializer):
-    products = ProductSerializer(many=False)
+    products = ProductSerializerForMarket(many=True,read_only=True)
 
     class Meta:
         model = Seller

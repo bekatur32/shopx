@@ -120,7 +120,7 @@ class SellerDetailProfileApi(generics.RetrieveAPIView):
     lookup_field = 'id'
 
 
-class MarketView(generics.ListAPIView):
-    queryset = Seller.objects.prefetch_related('products')
-    serializer_class = MarketSerializer
     
+class MarketListAPIView(generics.ListAPIView):
+    queryset = Seller.objects.all()
+    serializer_class = MarketSerializer

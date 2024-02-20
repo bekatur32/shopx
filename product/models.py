@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from user_profiles.models import Seller
 from django.db import models
 from django.conf import settings
 
@@ -22,7 +22,7 @@ class Product(models.Model):
     podcategory = models.ForeignKey(
         PodCategory, related_name="pod_products", on_delete=models.CASCADE
     )
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ManyToManyField(Seller, related_name="products")
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
     image = models.ImageField(upload_to="products/%Y/%m/%d", blank=True)

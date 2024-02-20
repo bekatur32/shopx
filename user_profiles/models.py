@@ -3,7 +3,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 
-from product.models import Product
 from .usermanager import CustomUserManager
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -65,7 +64,6 @@ class User(UserProfile):
 
 
 class Seller(UserProfile):
-    products = models.ForeignKey(Product, on_delete=models.CASCADE, null=True,blank=True)
     market_name = models.CharField(max_length=30) 
     
     def __str__(self) -> str:
