@@ -1,27 +1,22 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework import permissions
-from django.contrib.auth.hashers import check_password
-from .utils import send_verification_code
-from .services import *
-from .permissions import *
+from rest_framework.pagination import PageNumberPagination
 
+from .services import *
 from .serializers import *
+
 
 # апи для регистрации user sellers wholeseller
 class UserRegisterView(CreateUserApiView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserRegisterSerializer
 
 
 class SellerRegisterView(CreateUserApiView):
-    queryset = Seller.objects.all()
+    queryset = SellerProfile.objects.all()
     serializer_class = SellerRegisterSerializer
 
-
-# class WholeSellerRegisterView(CreateUserApiView):
-#     queryset = WholeSeller.objects.all()
-#     serializer_class = WholeSellerRegisterSerializer
 
 
 
@@ -37,19 +32,12 @@ class UserVerifyRegisterCode(generics.UpdateAPIView):
 
 
 
-# если забыл пароль он должен пройти верификацию этот апи отправляет на указанный email код
 class ForgetPasswordSendCodeView(generics.UpdateAPIView):
     serializer_class = SendCodeSerializer
 
-    def patch(self, request, *args, **kwargs):
-        email = request.data.get("email")
-        result = ChangePassword.send_email_code(email=email)
-
-        if result == "success":
-            return Response("Код для верификации отправлен на указанный email ", status=status.HTTP_200_OK)
-        else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
+    def put(self, request, *args, **kwargs):
+        email_or_phone = request.data.get("email_or_phone")
+        return ChangePassword.send_email_code(email_or_phone=email_or_phone)
 
         
 
@@ -73,7 +61,7 @@ class ForgetPasswordView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         
-        result = ChangePassword.set_new_password(self=self,request=request)
+        result = ChangePassword.change_password_on_reset(self=self,request=request)
 
         if result == "success":
             return Response("Пароль успешно изменен", status=status.HTTP_200_OK)
@@ -97,21 +85,51 @@ class UserResetPasswordView(generics.UpdateAPIView):
 
 
 
+
 class ListProfileApi(generics.ListAPIView):
-    queryset = UserProfile.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserProfileSerializer
-    
 
-class UpdateProfileApi(generics.UpdateAPIView):
-    queryset = UserProfile.objects.all()
+
+
+class UpdateUserProfileApi(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
     serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated,]
+    lookup_field = 'id'
+
+class DetailUserProfileApi(generics.RetrieveAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileSerializer
+    lookup_field = 'id'
+
+
+
+class SellerListApiview(generics.ListAPIView):
+    queryset = SellerProfile.objects.all()
+    serializer_class = SellerProfileSerializer
+    permission_classes = [permissions.IsAuthenticated,]
+
+
+class SellerUpdateProfileApi(generics.UpdateAPIView):
+    queryset = SellerProfile.objects.all()
+    serializer_class = SellerProfileSerializer
+    permission_classes = [permissions.IsAuthenticated,]
+    lookup_field = 'id'
+
+
+class SellerDetailProfileApi(generics.RetrieveAPIView):
+    queryset = SellerProfile.objects.all()
+    serializer_class = SellerProfileSerializer
+    lookup_field = 'id'
+
+
+
+class MarketListAPIView(generics.ListAPIView):
+    queryset = SellerProfile.objects.prefetch_related('products').all()
+    serializer_class = MarketSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'id'
-
-class DetailProfileApi(generics.RetrieveAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-    lookup_field = 'id'
-
+    pagination_class = PageNumberPagination
+    pagination_class.page_size = 10
 
 

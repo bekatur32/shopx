@@ -1,7 +1,6 @@
 from rest_framework.response import Response
 from .serializers import ProductSerializer, RecallSerializer
 from .models import Product, Recall, Like
-from user_profiles.permissions import IsSeller, IsBuyer
 from .filters import CustomFilter
 from rest_framework import generics
 from rest_framework.viewsets import GenericViewSet
@@ -14,7 +13,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 class ProductCreateApiView(CreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsSeller, ]
+    # permission_classes = [IsSeller, ]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -33,7 +32,7 @@ class ProductListApiView(ListAPIView):
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all().annotate(rating=Avg("recall__rating"), likes=Count('like'))
     serializer_class = ProductSerializer
-    permission_classes = [IsSeller, ]
+    # permission_classes = [IsSeller, ]
 
 
 class RecallListApiView(ListAPIView):
@@ -47,7 +46,7 @@ class RecallListApiView(ListAPIView):
 class RecallViewSet(GenericViewSet):
     queryset = Recall.objects.all()
     serializer_class = RecallSerializer
-    permission_classes = [IsBuyer, ]
+    # permission_classes = [IsBuyer, ]
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -81,7 +80,7 @@ class RecallViewSet(GenericViewSet):
 class LikeView(generics.RetrieveDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsBuyer, ]
+    # permission_classes = [IsBuyer, ]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

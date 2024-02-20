@@ -1,14 +1,74 @@
 from rest_framework import mixins,generics,status
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.db import connections, models
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.hashers import check_password
-from .utils import send_verification_code
-from .models import UserProfile
 from rest_framework.response import Response
 from rest_framework import status
 
-from rest_framework import status
+from django.utils.translation import gettext as _
+from django.core.mail import send_mail
+from django.contrib.auth.hashers import check_password
+
+from .models import CustomUser
+import random
+import string
+import requests
+
+
+def generate_verification_code(length=6):
+    """Generate a random verification code."""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+
+
+def send_verification_code(email_or_phone):
+
+    verification_code = generate_verification_code()
+
+    subject = 'Verification Code'
+    message = f'Your verification code is: {verification_code}'
+    sender_email = 'tolomushev33@gmail.com'
+    recipient_email = email_or_phone
+
+
+    send_mail(subject, message, sender_email, [recipient_email], fail_silently=False)
+    user_obj = CustomUser.objects.get(email_or_phone=email_or_phone)
+    user_obj.code = verification_code
+    user_obj.save()
+
+
+
+
+def send_code_to_number(email_or_phone):
+    login = 'erko'
+    password = 'Bishkek2022'
+    sender = 'SMSPRO.KG'
+
+    transactionId = generate_verification_code()
+    code = generate_verification_code()
+
+    xml_data = f"""<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+    <message>
+        <login>{login}</login>
+        <pwd>{password}</pwd>
+        <id>{transactionId}</id>
+        <sender>{sender}</sender>
+        <text>{code}</text>
+        <phones>
+            <phone>{email_or_phone}</phone>
+        </phones>
+    </message>"""
+
+
+    url = 'https://smspro.nikita.kg/api/message'
+    headers = {'Content-Type': 'application/xml'}
+
+    response = requests.post(url, data=xml_data, headers=headers)
+    user_obj = CustomUser.objects.get(email_or_phone=email_or_phone)
+    user_obj.code = code
+    print(user_obj.number)
+    user_obj.save()
+    if response.status_code == 200:
+        print('Ответ сервера:', response.text)
+
 
 
 class CreateUserApiView(mixins.CreateModelMixin,generics.GenericAPIView):
@@ -16,11 +76,16 @@ class CreateUserApiView(mixins.CreateModelMixin,generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
 
+        email_or_phone = serializer.validated_data['email_or_phone']
         serializer.save()
-        send_verification_code(email=email)
-        return Response("Код был отправлен на email", status=status.HTTP_201_CREATED)
+
+        if "@" in email_or_phone:
+            send_verification_code(email_or_phone=email_or_phone)
+        else:
+            send_code_to_number(email_or_phone=int(email_or_phone))
+
+        return Response("Код был отправлен на указанный реквизит", status=status.HTTP_201_CREATED)
 
 
 
@@ -28,7 +93,7 @@ class CheckCode():
         @staticmethod
         def check_code(code):
             try:
-                user = UserProfile.objects.get(code=code)
+                user = CustomUser.objects.get(code=code)
                 if not user.is_active:
                     user.is_active=True
                     user.save()
@@ -42,8 +107,8 @@ class CheckCode():
                     })
                 else:
                     return Response({'status': 'The user is already active'}, status=status.HTTP_202_ACCEPTED)
-            except UserProfile.DoesNotExist:
-                return Response("Пользователь не найден", status=status.HTTP_404_NOT_FOUND)
+            except CustomUser.DoesNotExist:
+                return Response("Пользователь не найден")
 
 
 
@@ -69,7 +134,7 @@ class ChangePassword:
         except Exception as e:
             return str(e)
         
-    def set_new_password(self,request):
+    def change_password_on_reset(self,request):
         user = request.user
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -84,11 +149,23 @@ class ChangePassword:
         user.save()
         return Response("Пароль был успешно изменен", status=status.HTTP_200_OK)
     
-    def send_email_code(email):
+    
+    def send_email_code(email_or_phone):
+
         try:
-            user = UserProfile.objects.get(email=email)
-            send_verification_code(email=email)
-        except user.DoesNotExist:
-            return Response("Вы не зарегистрированы", status=status.HTTP_404_NOT_FOUND)
+            CustomUser.objects.get(email_or_phone=email_or_phone)
+            if "@" in email_or_phone:
+                send_verification_code(email_or_phone=email_or_phone)
+                return Response("Код был отправлен на ваш email")
+            elif "996" in email_or_phone:
+                send_code_to_number(email_or_phone=int(email_or_phone))
+                return Response("Код был отправлен на ваш номер")
+            else:
+                return Response("The given data invalid")
+        except CustomUser.DoesNotExist:
+            return Response('Пользователь с таким емейлом не существует')
+        
+
+
     
 

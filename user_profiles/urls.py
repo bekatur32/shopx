@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.urls import path
 from .views import *
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
@@ -8,7 +7,6 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view()),
 
     path('seller/register',SellerRegisterView.as_view(), name='seller-register'),
-    # path('wholeseller/register',WholeSellerRegisterView.as_view(), name='wholeseller-register'),
 
     path('refresh-token/', TokenRefreshView.as_view()),
     path('send-code-to-email/', ForgetPasswordSendCodeView.as_view(), name='send_password_reset_code'),
@@ -18,8 +16,13 @@ urlpatterns = [
     path('reset-password-profile/', UserResetPasswordView.as_view(), name='reset_password'),
 
 
-    path('profiles/', ListProfileApi.as_view(), name='reset_password'),
-    path('profile/<int:id>', DetailProfileApi.as_view(), name='reset_password'),
-    path('profile/update/<int:id>', UpdateProfileApi.as_view(), name='reset_password'),
+    path('profiles/', ListProfileApi.as_view(), name=''),
+    path('profile/<int:id>', DetailUserProfileApi.as_view(), name=''),
+    path('profile/update/<int:id>', UpdateUserProfileApi.as_view(), name=''),
 
+    path('seller-profiles',SellerListApiview.as_view()),
+    path('seller-profile/<int:id>', DetailUserProfileApi.as_view(), name=''),
+    path('seller-profile/update/<int:id>', UpdateUserProfileApi.as_view(), name=''),
+
+    path('market', MarketListAPIView.as_view(), name=''),
 ]

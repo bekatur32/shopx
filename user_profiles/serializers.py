@@ -1,14 +1,18 @@
 from rest_framework import serializers
-from .models import *
+from .models import CustomUser,SellerProfile
+from product.serializers import Product
+from Category.models import Category,PodCategory
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = User
-        fields = ['username','surname','email','password']
+        model = CustomUser
+        fields = ['email_or_phone','password']
+
 
     def create(self, validated_data):
-        user = UserProfile.objects.create_user(**validated_data)
+        user = CustomUser.objects.create_user(**validated_data)
         return user
         
     
@@ -16,29 +20,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class SellerRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Seller
-        fields = ['username','surname','email','password','market_name']
+        model = SellerProfile
+        fields = ['email_or_phone','password','market_name','location']
 
     def create(self, validated_data):
-        user = Seller.objects.create_user(**validated_data)
+        user = SellerProfile.objects.create_user(**validated_data)
         user.is_seller = True
         user.save()
         return user
     
-    
-# class WholeSellerRegisterSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = WholeSeller
-#         fields = ['username','surname','email','password','question_for_wholeseller']
-
-#     def create(self, validated_data):
-#         user = WholeSeller.objects.create_user(**validated_data)
-#         user.wholeseller = True
-#         user.save()
-#         return user
-
-
 
 
 class VerifyCodeSerializer(serializers.ModelSerializer):
@@ -52,7 +42,7 @@ class LoginSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['email','password']
+        fields = ['email_or_phone','password']
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -61,13 +51,15 @@ class ChangePasswordSerializer(serializers.Serializer):
     confirm_new_password = serializers.CharField(write_only=True)
     
     class Meta:
-        fields = ['old_password','new_password','confirm_new_password',]
+        fields = ['old_password',
+                  'new_password',
+                  'confirm_new_password',]
 
 class SendCodeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['email']
+        fields = ['email_or_phone']
 
 
 class ForgetPasswordSerializer(serializers.Serializer):
@@ -83,15 +75,58 @@ class ForgetPasswordSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = UserProfile
+        model = CustomUser
         fields = ['username',
                   'surname',
-                  'email',
+                  'email_or_phone',
                   'number',
                   'gender',
-                  'category',
+                  ]
+        
+class SellerProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SellerProfile
+        fields = ['number',
+                  'market_name',
                   'location',
-                  'whatsapp_link',
+                  'email_or_phone',
+                  'category',
                   'instagram_link',
-                  'tiktok_link']
+                  'whatsapp_link',
+                  'tiktok_link',
+                  'facebook_link',
+                  ]
+        
+
+
+
+
+
+class PodCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PodCategory
+        fields = ('name',)
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('name', )
+
+
+class ProductSerializerForMarket(serializers.ModelSerializer):
+    category = CategorySerializer()
+    podcategory = PodCategorySerializer()
+
+    class Meta:
+        model = Product
+        fields = ['name','category','podcategory']
+        
+
+        
+class MarketSerializer(serializers.ModelSerializer):
+    products = ProductSerializerForMarket(many=True, read_only=True)
     
+    class Meta:
+        model = SellerProfile
+        fields = ('market_name','products', 'location', 'number', 'email_or_phone', 'is_verified','whatsapp_link','instagram_link','facebook_link','tiktok_link')

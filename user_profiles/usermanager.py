@@ -1,22 +1,18 @@
-import unicodedata
 from django.contrib.auth.models import BaseUserManager
-from django.contrib.auth.hashers import make_password
 
 class CustomUserManager(BaseUserManager):
-    """ Custom User Manager"""
+
     use_in_migrations = True
 
-    def create_user(self,email, password, **extra_fields):
+    def create_user(self, email_or_phone=None,password=None, **extra_fields):
 
-        if not email:
-            raise ValueError("The given email must be set")
-        email = self.normalize_email(email)
-        user = self.model(email=email,password=password, **extra_fields)
-        user.password = make_password(password)
+
+        user = self.model(email_or_phone=email_or_phone, **extra_fields)
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self,  email, password, **extra_fields):
+    def create_superuser(self, email_or_phone, password, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -26,4 +22,4 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True.")
 
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(email_or_phone=email_or_phone, password=password, **extra_fields)

@@ -1,10 +1,9 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.conf import settings
-
+from user_profiles.models import CustomUser,SellerProfile
 
 from Category.models import Category, PodCategory
-from user_profiles.models import CustomUser
 
 
 class Product(models.Model):
@@ -14,7 +13,7 @@ class Product(models.Model):
     podcategory = models.ForeignKey(
         PodCategory, related_name="pod_products", on_delete=models.CASCADE
     )
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser,related_name='products', on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
     image = models.ImageField(upload_to="products/%Y/%m/%d", blank=True)

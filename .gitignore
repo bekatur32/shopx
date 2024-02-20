@@ -103,10 +103,11 @@ ipython_config.py
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
 __pypackages__/
-
+migrations
 # Celery stuff
 celerybeat-schedule
 celerybeat.pid
+media
 
 # SageMath parsed files
 *.sage.py
