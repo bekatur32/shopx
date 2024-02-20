@@ -1,12 +1,12 @@
 from rest_framework.response import Response
-from .serializers import ProductSerializer, RecallSerializer, LikeSerializer
+from .serializers import ProductSerializer, RecallSerializer
 from .models import Product, Recall, Like
 from user_profiles.permissions import IsSeller, IsBuyer
 from .filters import CustomFilter
 from rest_framework import generics
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.generics import CreateAPIView, ListAPIView
-from django.db.models import Avg
+from django.db.models import Avg, Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -21,7 +21,7 @@ class ProductCreateApiView(CreateAPIView):
 
 
 class ProductListApiView(ListAPIView):
-    queryset = Product.objects.all().annotate(rating=Avg("recall__rating"))
+    queryset = Product.objects.all().annotate(rating=Avg("recall__rating"), likes=Count('like'))
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CustomFilter
@@ -31,7 +31,7 @@ class ProductListApiView(ListAPIView):
 
 # Представление для получения деталей, обновления и удаления продукта
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().annotate(rating=Avg("recall__rating"), likes=Count('like'))
     serializer_class = ProductSerializer
     permission_classes = [IsSeller, ]
 
