@@ -23,6 +23,5 @@ urlpatterns = [
     path('seller-profile/<int:id>', DetailUserProfileApi.as_view(), name=''),
     path('seller-profile/update/<int:id>', UpdateUserProfileApi.as_view(), name=''),
 
-    path('market/<int:category_id>/<int:podcategory_id>/', MarketView.as_view(), name=''),
-    path('market/<int:category_id>/', MarketView.as_view(), name=''),
+    path('market', MarketView.as_view(), name=''),
 ]
