@@ -21,7 +21,8 @@ class SellerRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SellerProfile
-        fields = ['email_or_phone','password','market_name','location']
+        fields = ['email_or_phone','password','market_name','location_latitude',
+                  'location_longitude',]
 
     def create(self, validated_data):
         user = SellerProfile.objects.create_user(**validated_data)
@@ -89,7 +90,8 @@ class SellerProfileSerializer(serializers.ModelSerializer):
         model = SellerProfile
         fields = ['number',
                   'market_name',
-                  'location',
+                  'location_latitude',
+                  'location_longitude',
                   'email_or_phone',
                   'category',
                   'instagram_link',
@@ -129,4 +131,5 @@ class MarketSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = SellerProfile
-        fields = ('market_name','products', 'location', 'number', 'email_or_phone', 'is_verified','whatsapp_link','instagram_link','facebook_link','tiktok_link')
+        fields = ('market_name','products', 'location_latitude',
+                  'location_longitude', 'number', 'email_or_phone', 'is_verified','whatsapp_link','instagram_link','facebook_link','tiktok_link')

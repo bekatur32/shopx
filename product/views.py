@@ -51,7 +51,7 @@ class RecallViewSet(GenericViewSet):
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(author=request.user)
+        serializer.save(user=request.user)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):

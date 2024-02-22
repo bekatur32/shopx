@@ -5,7 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 
 from .services import *
 from .serializers import *
-
+from drf_spectacular.utils import extend_schema
 
 # апи для регистрации user sellers wholeseller
 class UserRegisterView(CreateUserApiView):
@@ -24,6 +24,7 @@ class SellerRegisterView(CreateUserApiView):
 class UserVerifyRegisterCode(generics.UpdateAPIView):
     serializer_class = VerifyCodeSerializer
 
+    http_method_names = ['patch',]
     def patch(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -55,9 +56,11 @@ class BecomeSellerView(generics.UpdateAPIView):
 
 
 # если user забыл пароль при входе
+
 class ForgetPasswordView(generics.UpdateAPIView):
     serializer_class = ForgetPasswordSerializer
     permission_classes = [permissions.IsAuthenticated]
+
 
     def update(self, request, *args, **kwargs):
         
