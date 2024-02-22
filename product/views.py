@@ -56,28 +56,6 @@ class ProductListApiView(ListAPIView):
     ordering_fields = ["title", "price"]
     permission_classes = [AllowAny, ]
 
-    def get_queryset(self):
-        query = self.request.query_params.get("search", "")
-        min_price = self.request.query_params.get("min_price", None)
-        max_price = self.request.query_params.get("max_price", None)
-        start_date = self.request.query_params.get("start_date", None)
-        end_date = self.request.query_params.get("end_date", None)
-
-        products = Product.objects.filter(title__icontains=query)
-
-        if min_price is not None:
-            products = products.filter(price__gte=min_price)
-
-        if max_price is not None:
-            products = products.filter(price__lte=max_price)
-
-        if start_date is not None:
-            products = products.filter(created__gte=start_date)
-
-        if end_date is not None:
-            products = products.filter(created__lte=end_date)
-
-        return products
 
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
