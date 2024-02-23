@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProductDetailView, ProductListApiView, ProductCreateApiView, ProductsByCategoryApiView, ProductsByPodCategoryApiView,RecallListApiView,RecallViewSet
+from .views import ProductDetailView, ProductListApiView, ProductCreateApiView, ProductsByCategoryApiView, ProductsByPodCategoryApiView,RecallListApiView,RecallViewSet, LikeView
 
 router = DefaultRouter()
 router.register('recall', RecallViewSet, basename='recall')

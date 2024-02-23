@@ -23,7 +23,7 @@ class Product(models.Model):
     location = models.CharField(max_length=100)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
+    likes_relation = models.ManyToManyField(CustomUser, through='Like', related_name='liked_products')
     class Meta:
         ordering = ["title"]
 
@@ -32,13 +32,13 @@ class Product(models.Model):
             models.Index(fields=["title"]),
             models.Index(fields=["-created"]),
         ]
-        ordering = ["title"]
+       # ordering = ["title"]
 
-        indexes = [
-            models.Index(fields=["id"]),
-            models.Index(fields=["title"]),
-            models.Index(fields=["-created"]),
-        ]
+        #indexes = [
+         #   models.Index(fields=["id"]),
+        #    models.Index(fields=["title"]),
+        #    models.Index(fields=["-created"]),
+        #]
 
     def __str__(self):
         return self.title
@@ -77,8 +77,8 @@ class Discount(models.Model):
 
 
 class Like(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, related_name="like", on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name="like", on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.user} {self.product}'

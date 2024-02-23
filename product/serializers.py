@@ -36,6 +36,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     likes = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Product
         fields = [
