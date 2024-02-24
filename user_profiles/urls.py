@@ -6,7 +6,7 @@ urlpatterns = [
     path('register/', UserRegisterView.as_view(), name='register'),
     path('login/', TokenObtainPairView.as_view()),
 
-    path('seller/register',SellerRegisterView.as_view(), name='seller-register'),
+    path('seller/register/',SellerRegisterView.as_view(), name='seller-register'),
 
     path('refresh-token/', TokenRefreshView.as_view()),
     path('send-code-to-email/', ForgetPasswordSendCodeView.as_view(), name='send_password_reset_code'),
@@ -17,12 +17,13 @@ urlpatterns = [
 
 
     path('profiles/', ListProfileApi.as_view(), name=''),
-    path('profile/<int:id>', DetailUserProfileApi.as_view(), name=''),
-    path('profile/update/<int:id>', UpdateUserProfileApi.as_view(), name=''),
+    path('profile/<int:id>/', DetailUserProfileApi.as_view(), name=''),
+    path('profile/update/<int:id>/', UpdateUserProfileApi.as_view(), name=''),
 
-    path('seller-profiles',SellerListApiview.as_view()),
-    path('seller-profile/<int:id>', DetailUserProfileApi.as_view(), name=''),
-    path('seller-profile/update/<int:id>', UpdateUserProfileApi.as_view(), name=''),
+    path('seller-profiles/',SellerListApiview.as_view()),
+    path('seller-profile/<int:id>/', DetailUserProfileApi.as_view(), name=''),
+    path('seller-profile/update/<int:id>/', UpdateUserProfileApi.as_view(), name=''),
 
-    path('market', MarketListAPIView.as_view(), name=''),
+    path('market/', MarketListAPIView.as_view(), name=''),
+    path('logout/', LogoutView.as_view(), name=''),
 ]

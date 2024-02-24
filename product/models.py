@@ -33,14 +33,6 @@ class Product(models.Model):
             models.Index(fields=["name"]),
             models.Index(fields=["-created"]),
         ]
-        ordering = ["name"]
-
-        indexes = [
-            models.Index(fields=["id", "slug"]),
-            models.Index(fields=["name"]),
-            models.Index(fields=["-created"]),
-        ]
-
     def __str__(self):
         return self.name
 
@@ -72,3 +64,17 @@ class Like(models.Model):
     class Meta:
         verbose_name = 'Лайк'
         verbose_name_plural = 'Лайки'
+
+
+class Discount(models.Model):
+    product = models.OneToOneField(
+        Product, related_name="discount", on_delete=models.CASCADE
+    )
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_rate = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def discounted_price(self):
+        return self.price * (1 - self.discount_rate)
+
+    def __str__(self):
+        return f"Discount for {self.product.name}"

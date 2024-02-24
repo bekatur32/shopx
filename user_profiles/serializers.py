@@ -5,26 +5,42 @@ from Category.models import Category,PodCategory
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
+    password_confirm = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['email_or_phone','password']
+        fields = ['email_or_phone','password','password_confirm']
 
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError("Пароли не совпадают")
+        return attrs
+    
 
     def create(self, validated_data):
+        validated_data.pop('password_confirm')
         user = CustomUser.objects.create_user(**validated_data)
         return user
         
     
     
 class SellerRegisterSerializer(serializers.ModelSerializer):
+    password_confirm = serializers.CharField(write_only=True)
 
     class Meta:
         model = SellerProfile
-        fields = ['email_or_phone','password','market_name','location_latitude',
+        fields = ['email_or_phone','password','password_confirm','market_name','location_latitude',
                   'location_longitude',]
 
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError("Пароли не совпадают")
+        return attrs
+    
+
     def create(self, validated_data):
+        validated_data.pop('password_confirm')
         user = SellerProfile.objects.create_user(**validated_data)
         user.is_seller = True
         user.save()
@@ -90,6 +106,7 @@ class SellerProfileSerializer(serializers.ModelSerializer):
         model = SellerProfile
         fields = ['number',
                   'market_name',
+                  'address',
                   'location_latitude',
                   'location_longitude',
                   'email_or_phone',

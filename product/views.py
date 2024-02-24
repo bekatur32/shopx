@@ -1,6 +1,6 @@
 from rest_framework.response import Response
-from .serializers import ProductSerializer, RecallSerializer
-from .models import Product, Recall, Like
+from .serializers import ProductSerializer, RecallSerializer,DiscountSerializer
+from .models import Product, Recall, Like,Discount
 from .filters import CustomFilter
 from rest_framework import generics
 from rest_framework.viewsets import GenericViewSet
@@ -8,7 +8,9 @@ from rest_framework.generics import CreateAPIView, ListAPIView
 from django.db.models import Avg, Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-
+from user_profiles.models import CustomUser
+from .FCMmanage import sendPush
+from datetime import datetime
 
 class ProductCreateApiView(CreateAPIView):
     queryset = Product.objects.all()
@@ -99,3 +101,27 @@ class LikeView(generics.RetrieveDestroyAPIView):
             return Response("Like is deleted")
         else:
             return Response("No Like")
+
+
+class DiscountListView(generics.ListCreateAPIView):
+    queryset = Discount.objects.all()
+    serializer_class = DiscountSerializer
+    
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        all_tokens = CustomUser.objects.values_list('device_token',flat = True)
+
+        message =+ f'{instance.product.name}\n'
+        message =+ f'{instance.price}\n'
+        message =+ f'{instance.discount_rate}\n'
+
+        result = sendPush(title=f"Скидки на сегодня {datetime.utcnow()}",
+                    registration_token=list(all_tokens),
+                    msg = message
+                    ,
+                    )
+        return result
+    
+class DiscountDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Discount.objects.all()
+    serializer_class = DiscountSerializer

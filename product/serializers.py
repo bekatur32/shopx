@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Recall
+from .models import Product, Recall,Discount
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -24,3 +24,11 @@ class RecallSerializer(serializers.ModelSerializer):
         extra_kwargs = {'user': {'read_only': True, }, 'created': {'read_only': True, },
                         'updated': {'read_only': True, },
                         }
+
+
+
+
+class DiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Discount
+        fields = ['id', 'product', 'price', 'discount_rate']

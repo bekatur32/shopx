@@ -22,6 +22,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_verified = models.BooleanField(default=False)
     number = models.CharField(max_length= 30,unique=True,null= True, blank=True)
     is_seller = models.BooleanField(default=False, verbose_name="продавец")
+    device_token = models.CharField(max_length = 100, verbose_name = 'токен от ios/android')
 
     objects = CustomUserManager()
 
@@ -41,10 +42,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class SellerProfile(CustomUser):
     market_name = models.CharField(max_length = 50)
     image = models.ImageField(upload_to='media/profiles')
-    category=models.CharField(max_length=20)
+    category= models.CharField(max_length=20)
+    address = models.CharField(max_length = 50)
     location_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     location_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    instagram_link = models.URLField()
+    instagram_link = models.URLField(null=True, blank=True)
     whatsapp_link = models.URLField()
     tiktok_link = models.URLField()
     facebook_link = models.URLField()

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Recall
+from .models import Product, Recall,Discount
 
 
 admin.site.register(Recall)
@@ -35,3 +35,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ["price", "available"]
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ["name"]
+
+
+
+admin.site.register(Discount)
