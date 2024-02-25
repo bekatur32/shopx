@@ -1,6 +1,6 @@
 from celery import shared_task
 from .FCMmanage import sendPush
-from .models import Discount
+from .models import Discount,Recall
 from rest_framework.response import Response
 from rest_framework import status
 from Shopx.celery import app
@@ -23,3 +23,16 @@ def send_push_notification(id, title, tokens):
                     )
     return result
 
+
+
+@app.task
+def send_push_notification_recall(title, tokens):
+    message = 'Отзыв'
+
+    
+    result = sendPush(title=title,
+                    registration_token=tokens.split(),
+                    msg = message
+                    ,
+                    )
+    return result
