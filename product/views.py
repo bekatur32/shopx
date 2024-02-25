@@ -9,8 +9,8 @@ from django.db.models import Avg, Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from user_profiles.models import CustomUser
-from .FCMmanage import sendPush
 from datetime import datetime
+from .tasks import send_push_notification
 
 class ProductCreateApiView(CreateAPIView):
     queryset = Product.objects.all()
@@ -54,6 +54,7 @@ class RecallViewSet(GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
+
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
@@ -109,19 +110,15 @@ class DiscountListView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         instance = serializer.save()
+        id = instance.id
+        
         all_tokens = CustomUser.objects.values_list('device_token',flat = True)
-
-        message =+ f'{instance.product.name}\n'
-        message =+ f'{instance.price}\n'
-        message =+ f'{instance.discount_rate}\n'
-
-        result = sendPush(title=f"Скидки на сегодня {datetime.utcnow()}",
-                    registration_token=list(all_tokens),
-                    msg = message
-                    ,
-                    )
-        return result
+        title = f"большая скидка в магазине {instance.product.user.market_name} {datetime.utcnow()}"
+        token = 'c-BOW1AKX®:APA91bHBCtFhGtteH1r2y7c8gpUJpfrgDZYtncFmxZQht_wBDWk9Stdf78aMqUctKYU_01IkmMNW-KLP68_IhdZCM2WXCN4fU1XkoIVNCGTvBogzSpgt4IkveLbK7rNX7pQTfmP72MfV'
+        send_push_notification.delay(id, title, token)
+        
     
+
 class DiscountDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Discount.objects.all()
     serializer_class = DiscountSerializer
